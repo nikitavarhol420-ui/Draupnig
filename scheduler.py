@@ -20,25 +20,25 @@ def _deadline_message(task: Task, reason: str) -> "tuple[str, str]":
     title = esc(task.title)
     num = kid(task.id)
     if reason == "two_days":
-        face = "face2 первое напоминание.jpg"
+        face = "за 2 дня до дедлайна.png"
         text = (
-            "ТЕ ЧУВСТВА, КОГДА ДЕДЛАЙН ЕЩЁ НЕ СКОРО 😌\n\n"
-            f"{num} «{title}» — через 2 дня ({esc(task.deadline)}).\n"
-            "Времени вагон. Наливай чай ☕"
+            "ещё ДВА дня, всё отлично 😌\n\n"
+            f"{num} «{title}» — дедлайн {esc(task.deadline)}.\n"
+            "расслаблен. собран. в гармонии с миром."
         )
     elif reason == "today":
-        face = "face1 напоминание в день дедлайна.jpg"
+        face = "в день дедлайна.png"
         text = (
-            "ДЕДЛАЙН СЕГОДНЯ. PROBLEM? 😏\n\n"
+            "дедлайн сегодня. улыбка слегка поплыла.\n\n"
             f"{num} «{title}».\n"
-            "Часики тикают. Самое время перестать прокрастинировать."
+            "всё нормально. ВСЁ нормально."
         )
     else:  # overdue
-        face = "face3 после дедлайна.jpg"
+        face = "через день после дедлайна.png"
         text = (
             "ВСЁ ИДЁТ ПО ПЛАНУ 🙂\n\n"
-            f"{num} «{title}» — уже просрочена.\n"
-            "Ну сколько можно, а?"
+            f"{num} «{title}» — технически просрочена.\n"
+            "Но эмоционально она почти готова. А это главное."
         )
     return str(_FACES_DIR / face), text
 
