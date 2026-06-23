@@ -14,7 +14,7 @@ _DONE_FACE = str(Path(__file__).parent.parent / "когда все сделан�
 from task_bot.config import Config
 from task_bot.sheets import SheetsStore
 from task_bot import keyboards as kb
-from task_bot.reporting import filter_tasks, format_task_card, format_task_list, kid, esc
+from task_bot.reporting import filter_tasks, format_task_card, format_task_list, kid, esc, name
 
 
 class NewTask(StatesGroup):
@@ -178,7 +178,7 @@ def build_tasks_router(config: Config, store: SheetsStore, notifier) -> Router:
         # callback_data: "byperson:{username}" — список задач выбранного человека
         username = cb.data.split(":", 1)[1]
         tasks = filter_tasks(store.list_tasks(), assignee=username)
-        await cb.message.answer(f"Задачи @{esc(username)}:\n\n" + format_task_list(tasks))
+        await cb.message.answer(f"Задачи {esc(name(username))}:\n\n" + format_task_list(tasks))
         await cb.answer()
 
     # ---------- /task : три ветки ----------

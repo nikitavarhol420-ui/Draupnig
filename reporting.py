@@ -7,6 +7,19 @@ from task_bot.sheets import Task
 # Ссылки в тексте — выделяем моноширинным (в Telegram тап по нему копирует)
 _URL_RE = re.compile(r"(https?://\S+)")
 
+# username -> отображаемое имя (заполняется при старте из конфига участников)
+_DISPLAY_NAMES: dict[str, str] = {}
+
+
+def set_display_names(mapping: dict[str, str]) -> None:
+    """Запоминаем соответствие username -> имя (вызывается из main при старте)."""
+    _DISPLAY_NAMES.update(mapping)
+
+
+def name(username: str) -> str:
+    """Имя для отображения вместо username (если задано в конфиге)."""
+    return _DISPLAY_NAMES.get(username, username)
+
 STATUS_LABELS = {"todo": "🔵 todo", "in_progress": "🟡 в работе", "done": "🟢 готово"}
 # Без кружков — для компактного списка задач
 STATUS_PLAIN = {"todo": "todo", "in_progress": "в работе", "done": "готово"}
@@ -66,13 +79,13 @@ def format_task_card(task: Task) -> str:
     lines = [
         f"{kid(task.id)} <b>{esc(task.title)}</b>",
         f"<b>Статус:</b> {STATUS_LABELS.get(task.status, task.status)}",
-        f"<b>Исполнитель:</b> {esc(task.assignee)}",
+        f"<b>Исполнитель:</b> {esc(name(task.assignee))}",
     ]
     if task.description:
         lines.append(f"<b>Описание:</b>\n{format_links(task.description)}")
     if task.deadline:
         lines.append(f"<b>Дедлайн:</b> {human_date(task.deadline)}")
-    lines.append(f"<b>Создал:</b> {esc(task.created_by)} ({esc(task.created_at)})")
+    lines.append(f"<b>Создал:</b> {esc(name(task.created_by))} ({esc(task.created_at)})")
     if task.done_at:
         lines.append(f"<b>Закрыта:</b> {esc(task.done_at)}")
     return "\n".join(lines)
@@ -84,7 +97,7 @@ def format_task_list(tasks: list[Task]) -> str:
         return "Нет задач."
     return "\n".join(
         f"{kid(t.id)} {STATUS_PLAIN.get(t.status, t.status)} <b>{esc(t.title)}</b>"
-        f"{' → ' + human_date(t.deadline) if t.deadline else ''} ({esc(t.assignee)})"
+        f"{' → ' + human_date(t.deadline) if t.deadline else ''} ({esc(name(t.assignee))})"
         for t in tasks
     )
 
@@ -131,7 +144,7 @@ def build_report(tasks: list[Task], today: date) -> str:
         """Format a report section with title and items."""
         if not items:
             return f"{title}: —"
-        body = "\n".join(f"  {kid(t.id)} {esc(t.title)} ({esc(t.assignee)})" for t in items)
+        body = "\n".join(f"  {kid(t.id)} {esc(t.title)} ({esc(name(t.assignee))})" for t in items)
         return f"<b>{title}:</b>\n{body}"
 
     return "\n\n".join([

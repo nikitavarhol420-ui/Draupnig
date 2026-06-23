@@ -29,6 +29,10 @@ async def main():
     # Загружаем конфиг из .env (токен, таблица, участники и т.д.)
     config = load_config()
 
+    # Регистрируем имена участников для красивого отображения (username -> имя)
+    from task_bot.reporting import set_display_names
+    set_display_names({p.username: p.display_name for p in config.participants})
+
     # Подключаемся к Google Sheets — единственное «хранилище» бота
     store = SheetsStore(config.google_credentials, config.spreadsheet_id)
 
