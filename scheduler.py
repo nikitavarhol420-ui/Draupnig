@@ -30,7 +30,11 @@ def start_scheduler(bot: Bot, config: Config, store: SheetsStore) -> AsyncIOSche
                 chat_id = store.get_user_chat_id(task.assignee)
                 if chat_id is None:
                     continue
-                word = "завтра дедлайн" if reason == "tomorrow" else "ПРОСРОЧЕНО"
+                word = {
+                    "two_days": "дедлайн через 2 дня",
+                    "tomorrow": "завтра дедлайн",
+                    "overdue": "ПРОСРОЧЕНО",
+                }[reason]
                 await bot.send_message(
                     chat_id, f"⏰ Задача #{task.id} «{task.title}» — {word}.")
         except Exception as e:  # планировщик не должен ронять бота

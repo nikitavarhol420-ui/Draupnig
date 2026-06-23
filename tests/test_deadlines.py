@@ -18,6 +18,12 @@ def test_tomorrow_is_selected():
     assert select_deadline_pings(tasks, today) == [(tasks[0], "tomorrow")]
 
 
+def test_two_days_is_selected():
+    today = date(2026, 6, 23)
+    tasks = [task(id=1, deadline="2026-06-25")]  # ровно через 2 дня
+    assert select_deadline_pings(tasks, today) == [(tasks[0], "two_days")]
+
+
 def test_overdue_is_selected():
     today = date(2026, 6, 23)
     tasks = [task(id=1, deadline="2026-06-20")]
