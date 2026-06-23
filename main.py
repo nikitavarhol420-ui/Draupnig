@@ -1,8 +1,20 @@
 import asyncio
 
 from aiogram import Bot, Dispatcher
+from aiogram.types import BotCommand
 
 from task_bot.config import load_config
+
+
+# Список команд для синего меню Telegram (кнопки-подсказки рядом с полем ввода)
+BOT_COMMANDS = [
+    BotCommand(command="new", description="Создать задачу"),
+    BotCommand(command="tasks", description="Список задач (фильтры)"),
+    BotCommand(command="task", description="Карточка задачи: /task N"),
+    BotCommand(command="report", description="Сводка по задачам"),
+    BotCommand(command="start", description="Зарегистрироваться для уведомлений"),
+    BotCommand(command="help", description="Справка по командам"),
+]
 from task_bot.sheets import SheetsStore
 from task_bot.handlers.common import build_common_router
 from task_bot.handlers.report import build_report_router
@@ -33,6 +45,9 @@ async def main():
 
     # Запускаем планировщик фоновых задач (дедлайны + еженедельная сводка)
     start_scheduler(bot, config, store)
+
+    # Сообщаем Telegram список команд — появится синее меню с кнопками
+    await bot.set_my_commands(BOT_COMMANDS)
 
     print("Бот запущен. Ctrl+C для остановки.")
     # Запускаем long polling — бот «слушает» Telegram
