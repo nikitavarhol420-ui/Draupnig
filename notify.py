@@ -2,7 +2,7 @@ from aiogram import Bot
 
 from task_bot.config import Config
 from task_bot.sheets import SheetsStore, Task
-from task_bot.reporting import kid, esc
+from task_bot.reporting import kid, esc, human_date
 
 
 def make_assignment_notifier(bot: Bot, store: SheetsStore, config: Config):
@@ -24,7 +24,7 @@ def make_assignment_notifier(bot: Bot, store: SheetsStore, config: Config):
                 await bot.send_message(config.group_chat_id, warning)
                 return
             text = (f"📌 На тебя назначена задача {kid(task.id)}: <b>{esc(task.title)}</b>"
-                    + (f"\n<b>Дедлайн:</b> {esc(task.deadline)}" if task.deadline else ""))
+                    + (f"\n<b>Дедлайн:</b> {human_date(task.deadline)}" if task.deadline else ""))
             await bot.send_message(chat_id, text)
         except Exception as e:
             print(f"[notify] error: {e}")

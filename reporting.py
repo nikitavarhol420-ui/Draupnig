@@ -18,6 +18,22 @@ def esc(text: str) -> str:
     return html.escape(str(text))
 
 
+_MONTHS_GEN = [
+    "", "января", "февраля", "марта", "апреля", "мая", "июня",
+    "июля", "августа", "сентября", "октября", "ноября", "декабря",
+]
+
+
+def human_date(s: str) -> str:
+    """Дату 'YYYY-MM-DD' переводим в человеческий вид '29 июня'.
+    Если строка не распознана (пусто/кривой формат) — возвращаем как есть."""
+    try:
+        d = datetime.strptime(s, "%Y-%m-%d").date()
+    except (ValueError, TypeError):
+        return esc(str(s))
+    return f"{d.day} {_MONTHS_GEN[d.month]}"
+
+
 def filter_tasks(tasks, assignee=None, status=None) -> list[Task]:
     """Filter tasks by assignee and/or status."""
     result = tasks
@@ -38,7 +54,7 @@ def format_task_card(task: Task) -> str:
     if task.description:
         lines.append(f"<b>Описание:</b>\n{esc(task.description)}")
     if task.deadline:
-        lines.append(f"<b>Дедлайн:</b> {esc(task.deadline)}")
+        lines.append(f"<b>Дедлайн:</b> {human_date(task.deadline)}")
     lines.append(f"<b>Создал:</b> {esc(task.created_by)} ({esc(task.created_at)})")
     if task.done_at:
         lines.append(f"<b>Закрыта:</b> {esc(task.done_at)}")
@@ -51,7 +67,7 @@ def format_task_list(tasks: list[Task]) -> str:
         return "Нет задач."
     return "\n".join(
         f"{kid(t.id)} [{STATUS_LABELS.get(t.status, t.status)}] <b>{esc(t.title)}</b>"
-        f"{' → ' + esc(t.deadline) if t.deadline else ''} ({esc(t.assignee)})"
+        f"{' → ' + human_date(t.deadline) if t.deadline else ''} ({esc(t.assignee)})"
         for t in tasks
     )
 

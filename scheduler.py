@@ -9,7 +9,7 @@ from apscheduler.triggers.cron import CronTrigger
 from task_bot.config import Config
 from task_bot.sheets import SheetsStore, Task
 from task_bot.deadlines import select_deadline_pings
-from task_bot.reporting import build_report, kid, esc
+from task_bot.reporting import build_report, kid, esc, human_date
 
 # Папка с картинками-лицами (лежат рядом с этим модулем, в task_bot/)
 _FACES_DIR = Path(__file__).parent
@@ -23,20 +23,20 @@ def _deadline_message(task: Task, reason: str) -> "tuple[str, str]":
         face = "за 2 дня до дедлайна.png"
         text = (
             "Привет здоровяяк! Еще 2 дня. ММммм\n\n"
-            f"{num} «{title}» — дедлайн {esc(task.deadline)}."
+            f"{num} «{title}» — дедлайн {human_date(task.deadline)}."
         )
     elif reason == "today":
         face = "в день дедлайна.png"
         text = (
             "дедлайн сегодня.\n\n"
-            f"{num} «{title}».\n"
-            "всё нормально. ВСЁ нормально."
+            f"{num} «{title}»."
         )
     else:  # overdue
         face = "через день после дедлайна.png"
         text = (
             "💀💀💀\n\n"
-            f"{num} «{title}» — просрочена."
+            f"{num} «{title}» — просрочена.\n"
+            "никогда не поздно."
         )
     return str(_FACES_DIR / face), text
 
