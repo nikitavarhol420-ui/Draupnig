@@ -218,4 +218,37 @@ def build_tasks_router(config: Config, store: SheetsStore, notifier) -> Router:
         await cb.answer()
         await notifier(task)
 
+    # ---------- Отмена (удаление) задачи ----------
+
+    @router.callback_query(F.data.startswith("cancel:"))
+    async def cancel_ask(cb: CallbackQuery):
+        # callback_data: "cancel:{id}" — спрашиваем подтверждение, т.к. удаление необратимо
+        task_id = int(cb.data.split(":", 1)[1])
+        task = store.get_task(task_id)
+        if task is None:
+            await cb.answer("Задача не найдена", show_alert=True)
+            return
+        await cb.message.answer(
+            f"Точно удалить задачу #{task.id} «{task.title}»? Это необратимо.",
+            reply_markup=kb.confirm_delete_keyboard(task_id),
+        )
+        await cb.answer()
+
+    @router.callback_query(F.data.startswith("delyes:"))
+    async def cancel_confirm(cb: CallbackQuery):
+        # callback_data: "delyes:{id}" — подтверждено, удаляем строку
+        task_id = int(cb.data.split(":", 1)[1])
+        ok = store.delete_task(task_id)
+        if not ok:
+            await cb.answer("Задача не найдена", show_alert=True)
+            return
+        await cb.message.edit_text(f"Задача #{task_id} удалена.")
+        await cb.answer("Удалено")
+
+    @router.callback_query(F.data.startswith("delno:"))
+    async def cancel_abort(cb: CallbackQuery):
+        # callback_data: "delno:{id}" — передумали
+        await cb.message.edit_text("Удаление отменено, задача на месте.")
+        await cb.answer()
+
     return router

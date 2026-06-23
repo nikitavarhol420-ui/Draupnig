@@ -30,6 +30,15 @@ def status_keyboard(task_id: int) -> InlineKeyboardMarkup:
          InlineKeyboardButton(text="🟡 в работе", callback_data=f"status:{task_id}:in_progress"),
          InlineKeyboardButton(text="🟢 готово", callback_data=f"status:{task_id}:done")],
         [InlineKeyboardButton(text="↻ Переназначить", callback_data=f"reassign:{task_id}")],
+        [InlineKeyboardButton(text="❌ Отменить задачу", callback_data=f"cancel:{task_id}")],
+    ])
+
+
+def confirm_delete_keyboard(task_id: int) -> InlineKeyboardMarkup:
+    # Подтверждение необратимого удаления задачи
+    return _kb([
+        [InlineKeyboardButton(text="✅ Да, удалить", callback_data=f"delyes:{task_id}"),
+         InlineKeyboardButton(text="↩ Нет", callback_data=f"delno:{task_id}")],
     ])
 
 

@@ -122,6 +122,14 @@ class SheetsStore:
         self._tasks_ws.update(f"A{idx}", [task_to_row(task)])
         return task
 
+    def delete_task(self, task_id) -> bool:
+        # Физически удаляет строку задачи из листа. Необратимо.
+        idx = self._row_index(task_id)
+        if idx is None:
+            return False
+        self._tasks_ws.delete_rows(idx)
+        return True
+
     def get_user_chat_id(self, username: str) -> "int | None":
         for r in self._users_ws.get_all_values()[1:]:
             if r and r[0] == username and len(r) > 1 and r[1]:
