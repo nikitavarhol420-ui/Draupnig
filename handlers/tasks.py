@@ -175,7 +175,7 @@ def build_tasks_router(config: Config, store: SheetsStore, notifier) -> Router:
     @router.callback_query(F.data.startswith("status:"))
     async def change_status(cb: CallbackQuery):
         # callback_data: "status:{id}:{status}"
-        _, task_id, status = cb.data.split(":")
+        _, task_id, status = cb.data.split(":", 2)
         task = store.set_status(int(task_id), status)
         if task is None:
             await cb.answer("Задача не найдена", show_alert=True)
@@ -201,7 +201,7 @@ def build_tasks_router(config: Config, store: SheetsStore, notifier) -> Router:
     @router.callback_query(F.data.startswith("setassignee:"))
     async def reassign_set(cb: CallbackQuery):
         # callback_data: "setassignee:{id}:{username}"
-        _, task_id, username = cb.data.split(":")
+        _, task_id, username = cb.data.split(":", 2)
         task = store.set_assignee(int(task_id), username)
         if task is None:
             await cb.answer("Задача не найдена", show_alert=True)
