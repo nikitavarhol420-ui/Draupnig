@@ -13,10 +13,9 @@ def select_deadline_pings(tasks: list[Task], today: date) -> list[tuple[Task, st
     Select tasks that need deadline pings.
 
     Returns list of (task, reason) tuples where reason is
-    "two_days", "tomorrow" or "overdue".
+    "two_days" (за 2 дня), "today" (дедлайн сегодня) or "overdue" (просрочено).
     Ignores tasks with status "done" and tasks without a deadline.
     """
-    tomorrow = today + timedelta(days=1)
     in_two_days = today + timedelta(days=2)
     result = []
     for t in tasks:
@@ -30,8 +29,8 @@ def select_deadline_pings(tasks: list[Task], today: date) -> list[tuple[Task, st
             continue
         if d < today:
             result.append((t, "overdue"))
-        elif d == tomorrow:
-            result.append((t, "tomorrow"))
+        elif d == today:
+            result.append((t, "today"))
         elif d == in_two_days:
             result.append((t, "two_days"))
     return result

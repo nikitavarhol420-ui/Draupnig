@@ -1,13 +1,45 @@
 from datetime import date
+from pathlib import Path
 
 from aiogram import Bot
+from aiogram.types import FSInputFile
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from task_bot.config import Config
-from task_bot.sheets import SheetsStore
+from task_bot.sheets import SheetsStore, Task
 from task_bot.deadlines import select_deadline_pings
 from task_bot.reporting import build_report
+
+# Папка с картинками-лицами (лежат рядом с этим модулем, в task_bot/)
+_FACES_DIR = Path(__file__).parent
+
+
+def _deadline_message(task: Task, reason: str) -> "tuple[str, str]":
+    """По стадии напоминания возвращает (путь к лицу, живой текст-подпись)."""
+    if reason == "two_days":
+        face = "face2 первое напоминание.jpg"
+        text = (
+            "Так, без паники 🧘\n\n"
+            f"#{task.id} «{task.title}» — дедлайн через 2 дня ({task.deadline}).\n"
+            "Времени вагон. Можно даже сначала чаю. Но потом — сделать."
+        )
+    elif reason == "today":
+        face = "face1 напоминание в день дедлайна.jpg"
+        text = (
+            "А вот и дедлайн подъехал 😏\n\n"
+            f"#{task.id} «{task.title}» — это сегодня, дружок.\n"
+            "Часики тикают, а задачка сама себя не сделает. "
+            "Или сделает? Нет. Не сделает."
+        )
+    else:  # overdue
+        face = "face3 после дедлайна.jpg"
+        text = (
+            "Не, ну всё нормально 🙂\n\n"
+            f"#{task.id} «{task.title}» просто… немножко просрочена. Совсем капельку.\n"
+            "Я не злюсь. Я просто сижу тут. И жду. И улыбаюсь :)"
+        )
+    return str(_FACES_DIR / face), text
 
 
 def start_scheduler(bot: Bot, config: Config, store: SheetsStore) -> AsyncIOScheduler:
@@ -30,13 +62,9 @@ def start_scheduler(bot: Bot, config: Config, store: SheetsStore) -> AsyncIOSche
                 chat_id = store.get_user_chat_id(task.assignee)
                 if chat_id is None:
                     continue
-                word = {
-                    "two_days": "дедлайн через 2 дня",
-                    "tomorrow": "завтра дедлайн",
-                    "overdue": "ПРОСРОЧЕНО",
-                }[reason]
-                await bot.send_message(
-                    chat_id, f"⏰ Задача #{task.id} «{task.title}» — {word}.")
+                face_path, text = _deadline_message(task, reason)
+                # Шлём лицо-картинку с живой подписью
+                await bot.send_photo(chat_id, FSInputFile(face_path), caption=text)
         except Exception as e:  # планировщик не должен ронять бота
             print(f"[scheduler] check_deadlines error: {e}")
 

@@ -12,16 +12,23 @@ def task(**kw):
     return Task(**base)
 
 
-def test_tomorrow_is_selected():
+def test_today_is_selected():
     today = date(2026, 6, 23)
-    tasks = [task(id=1, deadline="2026-06-24")]
-    assert select_deadline_pings(tasks, today) == [(tasks[0], "tomorrow")]
+    tasks = [task(id=1, deadline="2026-06-23")]  # дедлайн сегодня
+    assert select_deadline_pings(tasks, today) == [(tasks[0], "today")]
 
 
 def test_two_days_is_selected():
     today = date(2026, 6, 23)
     tasks = [task(id=1, deadline="2026-06-25")]  # ровно через 2 дня
     assert select_deadline_pings(tasks, today) == [(tasks[0], "two_days")]
+
+
+def test_tomorrow_is_not_pinged():
+    # «Завтра» больше не отдельная стадия — пинга быть не должно
+    today = date(2026, 6, 23)
+    tasks = [task(id=1, deadline="2026-06-24")]
+    assert select_deadline_pings(tasks, today) == []
 
 
 def test_overdue_is_selected():
