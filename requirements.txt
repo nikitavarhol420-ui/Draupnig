@@ -4,3 +4,4 @@ APScheduler>=3.10
 python-dotenv>=1.0
 pytest>=8.0
 aiogram-calendar>=0.6
+aiohttp-socks>=0.8  # нужен aiogram для выхода к Telegram через прокси (сервер в РФ)

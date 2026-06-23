@@ -2,6 +2,7 @@ import asyncio
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 from aiogram.types import BotCommand
 
@@ -36,9 +37,14 @@ async def main():
     # Подключаемся к Google Sheets — единственное «хранилище» бота
     store = SheetsStore(config.google_credentials, config.spreadsheet_id)
 
+    # Если задан прокси (сервер в РФ, где Telegram режется) — весь трафик к
+    # api.telegram.org идёт через него. На маке config.bot_proxy = None -> напрямую.
+    session = AiohttpSession(proxy=config.bot_proxy) if config.bot_proxy else None
+
     # Создаём объект бота и диспетчер aiogram.
     # parse_mode=HTML — чтобы работали жирные заголовки в карточках задач.
     bot = Bot(config.bot_token,
+              session=session,
               default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher()
 
