@@ -20,16 +20,13 @@ def name(username: str) -> str:
     """Имя для отображения вместо username (если задано в конфиге)."""
     return _DISPLAY_NAMES.get(username, username)
 
-STATUS_LABELS = {"todo": "🔵 todo", "in_progress": "🟡 в работе", "done": "🟢 готово"}
-# Без кружков — для компактного списка задач
+# Статусы задач обычным текстом, без цветных кружков-эмодзи.
 STATUS_PLAIN = {"todo": "todo", "in_progress": "в работе", "done": "готово"}
-
-_KEYCAPS = {str(d): f"{d}️⃣" for d in range(10)}
 
 
 def kid(task_id) -> str:
-    """Номер задачи как эмодзи-клавиши: 3 -> 3️⃣, 12 -> 1️⃣2️⃣."""
-    return "".join(_KEYCAPS.get(c, c) for c in str(task_id))
+    """Номер задачи с точкой: 3 -> '3.', 12 -> '12.' (без эмодзи-клавиш)."""
+    return f"{task_id}."
 
 
 def esc(text: str) -> str:
@@ -149,8 +146,8 @@ def build_report(tasks: list[Task], today: date) -> str:
         return f"<b>{title}:</b>\n{body}"
 
     return "\n\n".join([
-        "📋 <b>Сводка по задачам</b>",
-        block("🟡 В работе", in_progress),
-        block("🔴 Просрочено", overdue),
-        block("✅ Закрыто за 7 дней", closed),
+        "<b>Сводка по задачам</b>",
+        block("В работе", in_progress),
+        block("Просрочено", overdue),
+        block("✓ Закрыто за 7 дней", closed),
     ])

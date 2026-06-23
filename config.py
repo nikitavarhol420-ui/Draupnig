@@ -21,7 +21,9 @@ class Config:
     group_chat_id: int
     google_credentials: str
     participants: list[Participant]
-    daily_check_time: str
+    daily_check_time: str          # утренний прогон (11:00): «за 2 дня» и «в день», текст скрыт спойлером
+    evening_today_time: str        # вечерний прогон (20:00): «за 1 день» и «в день»
+    overdue_time: str              # прогон просрочки (20:30): каждый день, пока не закрыта
     weekly_report_time: str
     # HTTP-прокси для выхода к api.telegram.org (нужен на серверах в РФ, где
     # Telegram заблокирован). На маке не задан — бот ходит напрямую.
@@ -59,6 +61,9 @@ def load_config() -> Config:
         google_credentials=_resolve_credentials(os.environ["GOOGLE_CREDENTIALS"]),
         participants=_parse_participants(os.environ["PARTICIPANTS"]),
         daily_check_time=os.environ["DAILY_CHECK_TIME"],
+        # Вечерний и просроченный прогоны: дефолты 20:00 / 20:30, если в .env не заданы.
+        evening_today_time=os.environ.get("EVENING_TODAY_TIME", "20:00"),
+        overdue_time=os.environ.get("OVERDUE_TIME", "20:30"),
         weekly_report_time=os.environ["WEEKLY_REPORT_TIME"],
         # Опционально: пусто/нет переменной -> None -> прямое соединение.
         bot_proxy=os.environ.get("BOT_PROXY") or None,

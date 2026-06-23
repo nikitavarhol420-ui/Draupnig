@@ -14,6 +14,7 @@ _DONE_FACE = str(Path(__file__).parent.parent / "когда все сделан�
 from task_bot.config import Config
 from task_bot.sheets import SheetsStore
 from task_bot import keyboards as kb
+from task_bot import phrases
 from task_bot.reporting import filter_tasks, format_task_card, format_task_list, kid, esc, name
 
 
@@ -233,10 +234,10 @@ def build_tasks_router(config: Config, store: SheetsStore, notifier) -> Router:
             reply_markup=kb.status_keyboard(task.id),
         )
         await cb.answer("Статус обновлён")
-        # Задачу закрыли — шлём лицо «когда всё готово» с поздравлением
+        # Задачу закрыли — шлём лицо «когда всё готово» со случайным поздравлением
         if status == "done":
             caption = (
-                "YESS YEEESSSS YEEEAH\n\n"
+                f"{phrases.pick(phrases.DONE)}\n\n"
                 f"{kid(task.id)} {esc(task.title)}\n"
                 "Готово"
             )

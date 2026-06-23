@@ -24,10 +24,17 @@ def test_two_days_is_selected():
     assert select_deadline_pings(tasks, today) == [(tasks[0], "two_days")]
 
 
-def test_tomorrow_is_not_pinged():
-    # «Завтра» больше не отдельная стадия — пинга быть не должно
+def test_one_day_is_selected():
+    # «Завтра» (за 1 день) — отдельная стадия one_day
     today = date(2026, 6, 23)
     tasks = [task(id=1, deadline="2026-06-24")]
+    assert select_deadline_pings(tasks, today) == [(tasks[0], "one_day")]
+
+
+def test_three_days_is_not_pinged():
+    # За 3 дня до дедлайна не пингуем
+    today = date(2026, 6, 23)
+    tasks = [task(id=1, deadline="2026-06-26")]
     assert select_deadline_pings(tasks, today) == []
 
 
