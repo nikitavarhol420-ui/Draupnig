@@ -5,3 +5,5 @@ __pycache__/
 service_account.json
 *.log
 .superpowers/
+
+.DS_Store
