@@ -1,7 +1,11 @@
 import html
+import re
 from datetime import date, datetime, timedelta
 
 from task_bot.sheets import Task
+
+# Ссылки в тексте — выделяем моноширинным (в Telegram тап по нему копирует)
+_URL_RE = re.compile(r"(https?://\S+)")
 
 STATUS_LABELS = {"todo": "🔵 todo", "in_progress": "🟡 в работе", "done": "🟢 готово"}
 # Без кружков — для компактного списка задач
@@ -18,6 +22,17 @@ def kid(task_id) -> str:
 def esc(text: str) -> str:
     """Экранируем пользовательский текст для HTML-разметки Telegram."""
     return html.escape(str(text))
+
+
+def format_links(text: str) -> str:
+    """Экранируем текст и заворачиваем ссылки в <code> — так их удобно копировать
+    (в Telegram тап по моноширинному тексту копирует его целиком)."""
+    parts = _URL_RE.split(str(text))
+    out = []
+    for i, part in enumerate(parts):
+        # Нечётные части — это URL (split с группой их выделяет)
+        out.append(f"<code>{esc(part)}</code>" if i % 2 else esc(part))
+    return "".join(out)
 
 
 _MONTHS_GEN = [
@@ -54,7 +69,7 @@ def format_task_card(task: Task) -> str:
         f"<b>Исполнитель:</b> {esc(task.assignee)}",
     ]
     if task.description:
-        lines.append(f"<b>Описание:</b>\n{esc(task.description)}")
+        lines.append(f"<b>Описание:</b>\n{format_links(task.description)}")
     if task.deadline:
         lines.append(f"<b>Дедлайн:</b> {human_date(task.deadline)}")
     lines.append(f"<b>Создал:</b> {esc(task.created_by)} ({esc(task.created_at)})")

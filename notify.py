@@ -5,7 +5,7 @@ from aiogram.types import FSInputFile
 
 from task_bot.config import Config
 from task_bot.sheets import SheetsStore, Task
-from task_bot.reporting import kid, esc, human_date
+from task_bot.reporting import kid, esc, human_date, format_task_card
 
 # Лицо «когда выдают задачу» (хитрый прищур) — лежит в папке task_bot/
 _ASSIGN_FACE = str(Path(__file__).parent / "face1 напоминание в день дедлайна.jpg")
@@ -29,9 +29,11 @@ def make_assignment_notifier(bot: Bot, store: SheetsStore, config: Config):
                 )
                 await bot.send_message(config.group_chat_id, warning)
                 return
-            text = (f"Тебе задачка\n\n{kid(task.id)} {esc(task.title)}"
-                    + (f"\nдедлайн {human_date(task.deadline)}" if task.deadline else ""))
-            await bot.send_photo(chat_id, FSInputFile(_ASSIGN_FACE), caption=text)
+            # Лицо с коротким заголовком, затем полная карточка отдельным сообщением
+            # (так длинное описание не упрётся в лимит подписи к фото — 1024 символа).
+            await bot.send_photo(chat_id, FSInputFile(_ASSIGN_FACE),
+                                 caption="<b>Тебе задачка</b>")
+            await bot.send_message(chat_id, format_task_card(task))
         except Exception as e:
             print(f"[notify] error: {e}")
     return notify_assignment
