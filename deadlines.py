@@ -20,7 +20,12 @@ def select_deadline_pings(tasks: list[Task], today: date) -> list[tuple[Task, st
     for t in tasks:
         if t.status == "done" or not t.deadline:
             continue
-        d = _parse_date(t.deadline)
+        try:
+            d = _parse_date(t.deadline)
+        except ValueError:
+            # Кривая дата в таблице (например, после ручной правки) — пропускаем эту задачу,
+            # не ломаем весь батч.
+            continue
         if d < today:
             result.append((t, "overdue"))
         elif d == tomorrow:

@@ -47,3 +47,26 @@ def test_build_report_buckets():
     assert "Закрыто за 7 дней" in report
     # старая закрытая задача (id=4) не попадает в недельную сводку
     assert report.count("#4") == 0
+
+
+def test_malformed_deadline_skipped_in_report():
+    """Задача с кривой датой дедлайна не роняет build_report и не попадает в overdue (M2)."""
+    today = date(2026, 6, 23)
+    tasks = [
+        task(id=1, status="todo", deadline="garbage"),       # невалидная дата — пропуск
+        task(id=2, status="todo", deadline="31.12.2026"),    # другой формат — пропуск
+        task(id=3, status="todo", deadline="2026-06-20"),    # нормальная просроченная
+        task(id=4, status="done", done_at="not-a-date"),     # кривой done_at — пропуск
+        task(id=5, status="done", done_at="2026-06-21 12:00"),  # нормальная закрытая
+    ]
+    # Не должно бросать исключение
+    report = build_report(tasks, today)
+    # Задача #3 — просрочена, должна быть в отчёте
+    assert "#3" in report
+    # Задача #5 — закрыта за 7 дней, должна быть в отчёте
+    assert "#5" in report
+    # Кривые задачи #1 и #2 не должны попасть в секцию overdue
+    assert "#1" not in report
+    assert "#2" not in report
+    # Задача #4 с кривым done_at тоже не должна попасть в недельную закрытую
+    assert "#4" not in report

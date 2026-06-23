@@ -91,6 +91,14 @@ def build_tasks_router(config: Config, store: SheetsStore, notifier) -> Router:
     # Финальный шаг FSM: создать задачу в хранилище и уведомить исполнителя.
     async def _finish(message: Message, state: FSMContext, deadline: str):
         data = await state.get_data()
+
+        # Защита от протухшего FSM-состояния после перезапуска бота:
+        # inline-кнопка могла сработать уже когда state пустой → KeyError.
+        if not data.get("title") or not data.get("assignee"):
+            await message.answer("Сессия устарела — начни заново через /new.")
+            await state.clear()
+            return
+
         # Inline correction #2: берём creator из FSM-данных, а не из message.chat.username.
         # message здесь может быть cb.message (объект из callback), где chat — групповой чат,
         # а не пользователь, поэтому username будет None. Creator сохранён на шаге new_start

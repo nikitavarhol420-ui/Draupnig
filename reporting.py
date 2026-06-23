@@ -47,7 +47,11 @@ def _is_overdue(task: Task, today: date) -> bool:
     """Check if a task is overdue (has passed deadline and not done)."""
     if task.status == "done" or not task.deadline:
         return False
-    return _parse_date(task.deadline) < today
+    try:
+        return _parse_date(task.deadline) < today
+    except ValueError:
+        # Кривая дата в таблице — считаем задачу «не просроченной» и пропускаем.
+        return False
 
 
 def _parse_date(s: str) -> date:
@@ -65,11 +69,17 @@ def build_report(tasks: list[Task], today: date) -> str:
 
     # Section 3: tasks closed in the last 7 days
     week_ago = today - timedelta(days=7)
-    closed = [
-        t for t in tasks
-        if t.status == "done" and t.done_at
-        and _parse_date(t.done_at.split(" ")[0]) >= week_ago
-    ]
+    closed = []
+    for t in tasks:
+        if not (t.status == "done" and t.done_at):
+            continue
+        try:
+            # done_at хранится как "YYYY-MM-DD HH:MM" — берём только дату.
+            if _parse_date(t.done_at.split(" ")[0]) >= week_ago:
+                closed.append(t)
+        except ValueError:
+            # Кривая дата done_at — пропускаем задачу, не ломаем отчёт.
+            continue
 
     def block(title, items):
         """Format a report section with title and items."""

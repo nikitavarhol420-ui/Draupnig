@@ -23,6 +23,13 @@ def build_common_router(config: Config, store: SheetsStore) -> Router:
 
     @router.message(CommandStart())
     async def on_start(message: Message):
+        # /start в группе не имеет смысла — бот не может сохранить ID группы как личный DM.
+        if message.chat.type != "private":
+            await message.answer(
+                "Напиши мне в личку (в личных сообщениях), чтобы я сохранил тебя для уведомлений."
+            )
+            return
+
         # Берём username из Telegram, fallback — строковый ID
         username = message.from_user.username or str(message.from_user.id)
         # Имя из конфига → Telegram full_name → username

@@ -32,3 +32,17 @@ def test_done_and_future_ignored():
         task(id=3, deadline=""),                           # нет дедлайна — пропуск
     ]
     assert select_deadline_pings(tasks, today) == []
+
+
+def test_malformed_deadline_skipped_not_raised():
+    """Задача с кривой датой дедлайна пропускается, а не роняет весь батч (M2)."""
+    today = date(2026, 6, 23)
+    tasks = [
+        task(id=1, deadline="garbage"),          # невалидная строка
+        task(id=2, deadline="31.12.2026"),       # другой формат — тоже невалидный
+        task(id=3, deadline="2026-06-22"),       # нормальная просроченная задача
+    ]
+    # Должны получить только задачу #3 (overdue), без исключения
+    result = select_deadline_pings(tasks, today)
+    assert len(result) == 1
+    assert result[0] == (tasks[2], "overdue")
