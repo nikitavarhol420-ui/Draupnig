@@ -26,19 +26,19 @@ def deadline_keyboard() -> InlineKeyboardMarkup:
 
 def status_keyboard(task_id: int) -> InlineKeyboardMarkup:
     return _kb([
-        [InlineKeyboardButton(text="🔵 todo", callback_data=f"status:{task_id}:todo"),
-         InlineKeyboardButton(text="🟡 в работе", callback_data=f"status:{task_id}:in_progress"),
-         InlineKeyboardButton(text="🟢 готово", callback_data=f"status:{task_id}:done")],
-        [InlineKeyboardButton(text="↻ Переназначить", callback_data=f"reassign:{task_id}")],
-        [InlineKeyboardButton(text="❌ Отменить задачу", callback_data=f"cancel:{task_id}")],
+        [InlineKeyboardButton(text="todo", callback_data=f"status:{task_id}:todo"),
+         InlineKeyboardButton(text="в работе", callback_data=f"status:{task_id}:in_progress"),
+         InlineKeyboardButton(text="готово", callback_data=f"status:{task_id}:done")],
+        [InlineKeyboardButton(text="Переназначить", callback_data=f"reassign:{task_id}")],
+        [InlineKeyboardButton(text="Отменить задачу", callback_data=f"cancel:{task_id}")],
     ])
 
 
 def confirm_delete_keyboard(task_id: int) -> InlineKeyboardMarkup:
     # Подтверждение необратимого удаления задачи
     return _kb([
-        [InlineKeyboardButton(text="✅ Да, удалить", callback_data=f"delyes:{task_id}"),
-         InlineKeyboardButton(text="↩ Нет", callback_data=f"delno:{task_id}")],
+        [InlineKeyboardButton(text="Да, удалить", callback_data=f"delyes:{task_id}"),
+         InlineKeyboardButton(text="Нет", callback_data=f"delno:{task_id}")],
     ])
 
 
@@ -56,4 +56,13 @@ def tasks_filter_keyboard() -> InlineKeyboardMarkup:
         [InlineKeyboardButton(text="todo", callback_data="filter:todo"),
          InlineKeyboardButton(text="в работе", callback_data="filter:in_progress"),
          InlineKeyboardButton(text="готово", callback_data="filter:done")],
+        [InlineKeyboardButton(text="По человеку", callback_data="filter:byperson")],
     ])
+
+
+def person_filter_keyboard(participants: list[Participant]) -> InlineKeyboardMarkup:
+    # Кнопки участников — показать задачи выбранного человека
+    rows = [[InlineKeyboardButton(text=p.display_name,
+                                  callback_data=f"byperson:{p.username}")]
+            for p in participants]
+    return _kb(rows)

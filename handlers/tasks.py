@@ -9,7 +9,7 @@ from aiogram.types import Message, CallbackQuery
 from task_bot.config import Config
 from task_bot.sheets import SheetsStore
 from task_bot import keyboards as kb
-from task_bot.reporting import filter_tasks, format_task_card, format_task_list
+from task_bot.reporting import filter_tasks, format_task_card, format_task_list, kid, esc
 
 
 class NewTask(StatesGroup):
@@ -131,6 +131,14 @@ def build_tasks_router(config: Config, store: SheetsStore, notifier) -> Router:
     @router.callback_query(F.data.startswith("filter:"))
     async def tasks_filter(cb: CallbackQuery):
         kind = cb.data.split(":", 1)[1]
+        # "По человеку" — показываем кнопки участников, список придёт следующим шагом
+        if kind == "byperson":
+            await cb.message.answer(
+                "Чьи задачи показать?",
+                reply_markup=kb.person_filter_keyboard(config.participants),
+            )
+            await cb.answer()
+            return
         tasks = store.list_tasks()
         if kind == "mine":
             username = cb.from_user.username or str(cb.from_user.id)
@@ -139,6 +147,14 @@ def build_tasks_router(config: Config, store: SheetsStore, notifier) -> Router:
             tasks = filter_tasks(tasks, status=kind)
         # "all" — задачи уже не фильтруем
         await cb.message.answer(format_task_list(tasks))
+        await cb.answer()
+
+    @router.callback_query(F.data.startswith("byperson:"))
+    async def tasks_by_person(cb: CallbackQuery):
+        # callback_data: "byperson:{username}" — список задач выбранного человека
+        username = cb.data.split(":", 1)[1]
+        tasks = filter_tasks(store.list_tasks(), assignee=username)
+        await cb.message.answer(f"Задачи @{esc(username)}:\n\n" + format_task_list(tasks))
         await cb.answer()
 
     # ---------- /task : три ветки ----------
@@ -229,7 +245,7 @@ def build_tasks_router(config: Config, store: SheetsStore, notifier) -> Router:
             await cb.answer("Задача не найдена", show_alert=True)
             return
         await cb.message.answer(
-            f"Точно удалить задачу #{task.id} «{task.title}»? Это необратимо.",
+            f"Точно удалить задачу {kid(task.id)} «{esc(task.title)}»? Это необратимо.",
             reply_markup=kb.confirm_delete_keyboard(task_id),
         )
         await cb.answer()
@@ -242,7 +258,7 @@ def build_tasks_router(config: Config, store: SheetsStore, notifier) -> Router:
         if not ok:
             await cb.answer("Задача не найдена", show_alert=True)
             return
-        await cb.message.edit_text(f"Задача #{task_id} удалена.")
+        await cb.message.edit_text(f"Задача {kid(task_id)} удалена.")
         await cb.answer("Удалено")
 
     @router.callback_query(F.data.startswith("delno:"))

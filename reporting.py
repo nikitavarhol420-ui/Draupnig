@@ -1,8 +1,21 @@
+import html
 from datetime import date, datetime, timedelta
 
 from task_bot.sheets import Task
 
 STATUS_LABELS = {"todo": "🔵 todo", "in_progress": "🟡 в работе", "done": "🟢 готово"}
+
+_KEYCAPS = {str(d): f"{d}️⃣" for d in range(10)}
+
+
+def kid(task_id) -> str:
+    """Номер задачи как эмодзи-клавиши: 3 -> 3️⃣, 12 -> 1️⃣2️⃣."""
+    return "".join(_KEYCAPS.get(c, c) for c in str(task_id))
+
+
+def esc(text: str) -> str:
+    """Экранируем пользовательский текст для HTML-разметки Telegram."""
+    return html.escape(str(text))
 
 
 def filter_tasks(tasks, assignee=None, status=None) -> list[Task]:
@@ -16,29 +29,29 @@ def filter_tasks(tasks, assignee=None, status=None) -> list[Task]:
 
 
 def format_task_card(task: Task) -> str:
-    """Format a single task as a detailed card with all fields."""
+    """Format a single task as a detailed card with all fields (HTML)."""
     lines = [
-        f"#{task.id} {task.title}",
-        f"Статус: {STATUS_LABELS.get(task.status, task.status)}",
-        f"Исполнитель: {task.assignee}",
+        f"{kid(task.id)} <b>{esc(task.title)}</b>",
+        f"<b>Статус:</b> {STATUS_LABELS.get(task.status, task.status)}",
+        f"<b>Исполнитель:</b> {esc(task.assignee)}",
     ]
     if task.description:
-        lines.append(f"Описание: {task.description}")
+        lines.append(f"<b>Описание:</b>\n{esc(task.description)}")
     if task.deadline:
-        lines.append(f"Дедлайн: {task.deadline}")
-    lines.append(f"Создал: {task.created_by} ({task.created_at})")
+        lines.append(f"<b>Дедлайн:</b> {esc(task.deadline)}")
+    lines.append(f"<b>Создал:</b> {esc(task.created_by)} ({esc(task.created_at)})")
     if task.done_at:
-        lines.append(f"Закрыта: {task.done_at}")
+        lines.append(f"<b>Закрыта:</b> {esc(task.done_at)}")
     return "\n".join(lines)
 
 
 def format_task_list(tasks: list[Task]) -> str:
-    """Format tasks as a compact list; show 'Нет задач' if empty."""
+    """Format tasks as a compact list (HTML); show 'Нет задач' if empty."""
     if not tasks:
         return "Нет задач."
     return "\n".join(
-        f"#{t.id} [{STATUS_LABELS.get(t.status, t.status)}] {t.title}"
-        f"{' → ' + t.deadline if t.deadline else ''} ({t.assignee})"
+        f"{kid(t.id)} [{STATUS_LABELS.get(t.status, t.status)}] <b>{esc(t.title)}</b>"
+        f"{' → ' + esc(t.deadline) if t.deadline else ''} ({esc(t.assignee)})"
         for t in tasks
     )
 
@@ -85,11 +98,11 @@ def build_report(tasks: list[Task], today: date) -> str:
         """Format a report section with title and items."""
         if not items:
             return f"{title}: —"
-        body = "\n".join(f"  #{t.id} {t.title} ({t.assignee})" for t in items)
-        return f"{title}:\n{body}"
+        body = "\n".join(f"  {kid(t.id)} {esc(t.title)} ({esc(t.assignee)})" for t in items)
+        return f"<b>{title}:</b>\n{body}"
 
     return "\n\n".join([
-        "📋 Сводка по задачам",
+        "📋 <b>Сводка по задачам</b>",
         block("🟡 В работе", in_progress),
         block("🔴 Просрочено", overdue),
         block("✅ Закрыто за 7 дней", closed),

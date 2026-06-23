@@ -9,7 +9,7 @@ from apscheduler.triggers.cron import CronTrigger
 from task_bot.config import Config
 from task_bot.sheets import SheetsStore, Task
 from task_bot.deadlines import select_deadline_pings
-from task_bot.reporting import build_report
+from task_bot.reporting import build_report, kid, esc
 
 # Папка с картинками-лицами (лежат рядом с этим модулем, в task_bot/)
 _FACES_DIR = Path(__file__).parent
@@ -17,27 +17,28 @@ _FACES_DIR = Path(__file__).parent
 
 def _deadline_message(task: Task, reason: str) -> "tuple[str, str]":
     """По стадии напоминания возвращает (путь к лицу, живой текст-подпись)."""
+    title = esc(task.title)
+    num = kid(task.id)
     if reason == "two_days":
         face = "face2 первое напоминание.jpg"
         text = (
-            "Так, без паники 🧘\n\n"
-            f"#{task.id} «{task.title}» — дедлайн через 2 дня ({task.deadline}).\n"
-            "Времени вагон. Можно даже сначала чаю. Но потом — сделать."
+            "ТЕ ЧУВСТВА, КОГДА ДЕДЛАЙН ЕЩЁ НЕ СКОРО 😌\n\n"
+            f"{num} «{title}» — через 2 дня ({esc(task.deadline)}).\n"
+            "Времени вагон. Наливай чай ☕"
         )
     elif reason == "today":
         face = "face1 напоминание в день дедлайна.jpg"
         text = (
-            "А вот и дедлайн подъехал 😏\n\n"
-            f"#{task.id} «{task.title}» — это сегодня, дружок.\n"
-            "Часики тикают, а задачка сама себя не сделает. "
-            "Или сделает? Нет. Не сделает."
+            "ДЕДЛАЙН СЕГОДНЯ. PROBLEM? 😏\n\n"
+            f"{num} «{title}».\n"
+            "Часики тикают. Самое время перестать прокрастинировать."
         )
     else:  # overdue
         face = "face3 после дедлайна.jpg"
         text = (
-            "Не, ну всё нормально 🙂\n\n"
-            f"#{task.id} «{task.title}» просто… немножко просрочена. Совсем капельку.\n"
-            "Я не злюсь. Я просто сижу тут. И жду. И улыбаюсь :)"
+            "ВСЁ ИДЁТ ПО ПЛАНУ 🙂\n\n"
+            f"{num} «{title}» — уже просрочена.\n"
+            "Ну сколько можно, а?"
         )
     return str(_FACES_DIR / face), text
 

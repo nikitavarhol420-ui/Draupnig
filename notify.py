@@ -2,6 +2,7 @@ from aiogram import Bot
 
 from task_bot.config import Config
 from task_bot.sheets import SheetsStore, Task
+from task_bot.reporting import kid, esc
 
 
 def make_assignment_notifier(bot: Bot, store: SheetsStore, config: Config):
@@ -16,14 +17,14 @@ def make_assignment_notifier(bot: Bot, store: SheetsStore, config: Config):
             if chat_id is None:
                 # Исполнитель не делал /start — сообщаем в групповой чат, чтобы не потерять
                 warning = (
-                    f"⚠️ @{task.assignee} ещё не написал боту /start — "
-                    f"задача #{task.id} «{task.title}» назначена, "
+                    f"⚠️ @{esc(task.assignee)} ещё не написал боту /start — "
+                    f"задача {kid(task.id)} «{esc(task.title)}» назначена, "
                     f"но личное уведомление не доставлено."
                 )
                 await bot.send_message(config.group_chat_id, warning)
                 return
-            text = (f"📌 На тебя назначена задача #{task.id}: {task.title}"
-                    + (f"\nДедлайн: {task.deadline}" if task.deadline else ""))
+            text = (f"📌 На тебя назначена задача {kid(task.id)}: <b>{esc(task.title)}</b>"
+                    + (f"\n<b>Дедлайн:</b> {esc(task.deadline)}" if task.deadline else ""))
             await bot.send_message(chat_id, text)
         except Exception as e:
             print(f"[notify] error: {e}")
