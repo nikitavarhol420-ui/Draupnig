@@ -75,19 +75,21 @@ def filter_tasks(tasks, assignee=None, status=None) -> list[Task]:
 
 
 def format_task_card(task: Task) -> str:
-    """Format a single task as a detailed card with all fields (HTML)."""
-    lines = [
+    """Format a single task as a detailed card with all fields (HTML).
+    Блоки разделяются пустой строкой — так карточка читается легче."""
+    # Каждый элемент — отдельный блок; статус и исполнитель идут вместе.
+    blocks = [
         f"{kid(task.id)} <b>{esc(task.title)}</b>",
-        f"<b>Статус:</b> {STATUS_PLAIN.get(task.status, task.status)}",
+        f"<b>Статус:</b> {STATUS_PLAIN.get(task.status, task.status)}\n"
         f"<b>Исполнитель:</b> {esc(name(task.assignee))}",
     ]
     if task.description:
-        lines.append(f"<b>Описание:</b>\n{format_links(task.description)}")
+        blocks.append(f"<b>Описание:</b>\n{format_links(task.description)}")
     if task.deadline:
-        lines.append(f"<b>Дедлайн:</b> {human_date(task.deadline)}")
+        blocks.append(f"<b>Дедлайн:</b> {human_date(task.deadline)}")
     if task.done_at:
-        lines.append(f"<b>Закрыта:</b> {esc(task.done_at)}")
-    return "\n".join(lines)
+        blocks.append(f"<b>Закрыта:</b> {esc(task.done_at)}")
+    return "\n\n".join(blocks)
 
 
 def format_task_list(tasks: list[Task]) -> str:
