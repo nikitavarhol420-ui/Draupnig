@@ -59,14 +59,15 @@ def test_malformed_deadline_skipped_in_report():
         task(id=4, status="done", done_at="not-a-date"),     # кривой done_at — пропуск
         task(id=5, status="done", done_at="2026-06-21 12:00"),  # нормальная закрытая
     ]
-    # Не должно бросать исключение
+    # Не должно бросать исключение. Номера задач выводятся эмодзи-клавишами (kid()).
+    from task_bot.reporting import kid
     report = build_report(tasks, today)
-    # Задача #3 — просрочена, должна быть в отчёте
-    assert "#3" in report
-    # Задача #5 — закрыта за 7 дней, должна быть в отчёте
-    assert "#5" in report
-    # Кривые задачи #1 и #2 не должны попасть в секцию overdue
-    assert "#1" not in report
-    assert "#2" not in report
-    # Задача #4 с кривым done_at тоже не должна попасть в недельную закрытую
-    assert "#4" not in report
+    # Задача 3 — просрочена, должна быть в отчёте
+    assert kid(3) in report
+    # Задача 5 — закрыта за 7 дней, должна быть в отчёте
+    assert kid(5) in report
+    # Кривые задачи 1 и 2 не должны попасть в секцию overdue
+    assert kid(1) not in report
+    assert kid(2) not in report
+    # Задача 4 с кривым done_at тоже не должна попасть в недельную закрытую
+    assert kid(4) not in report
