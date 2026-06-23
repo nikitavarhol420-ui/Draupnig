@@ -85,7 +85,6 @@ def format_task_card(task: Task) -> str:
         lines.append(f"<b>Описание:</b>\n{format_links(task.description)}")
     if task.deadline:
         lines.append(f"<b>Дедлайн:</b> {human_date(task.deadline)}")
-    lines.append(f"<b>Создал:</b> {esc(name(task.created_by))} ({esc(task.created_at)})")
     if task.done_at:
         lines.append(f"<b>Закрыта:</b> {esc(task.done_at)}")
     return "\n".join(lines)
