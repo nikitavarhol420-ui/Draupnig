@@ -18,7 +18,7 @@ def make_assignment_notifier(bot: Bot, store: SheetsStore, config: Config):
                 # Исполнитель не делал /start — сообщаем в групповой чат, чтобы не потерять
                 warning = (
                     f"⚠️ @{esc(task.assignee)} ещё не написал боту /start — "
-                    f"задача {kid(task.id)} «{esc(task.title)}» назначена, "
+                    f"задача {kid(task.id)} {esc(task.title)} назначена, "
                     f"но личное уведомление не доставлено."
                 )
                 await bot.send_message(config.group_chat_id, warning)

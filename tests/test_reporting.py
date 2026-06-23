@@ -26,7 +26,8 @@ def test_filter_by_status():
 
 def test_format_task_card_contains_key_fields():
     card = format_task_card(task(id=7, title="Бэктест", deadline="2026-07-01"))
-    assert "7" in card and "Бэктест" in card and "2026-07-01" in card
+    # Дедлайн теперь выводится по-человечески: "1 июля"
+    assert "7" in card and "Бэктест" in card and "1 июля" in card
 
 
 def test_format_task_list_empty():

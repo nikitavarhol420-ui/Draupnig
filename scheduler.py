@@ -15,30 +15,42 @@ from task_bot.reporting import build_report, kid, esc, human_date
 _FACES_DIR = Path(__file__).parent
 
 
+# Несколько вариантов «приветствия» на каждую стадию — бот выбирает по номеру
+# задачи, чтобы от задачи к задаче текст менялся и не приедался.
+_OPENERS = {
+    "two_days": [
+        "Привет здоровяяк! Еще 2 дня. ММммм",
+        "мммм оаоа",
+        "Чай будешь?",
+    ],
+    "today": [
+        "дедлайн сегодня.",
+    ],
+    "overdue": [
+        "💀💀💀",
+    ],
+}
+_FACE_BY_REASON = {
+    "two_days": "за 2 дня до дедлайна.png",
+    "today": "в день дедлайна.png",
+    "overdue": "через день после дедлайна.png",
+}
+
+
 def _deadline_message(task: Task, reason: str) -> "tuple[str, str]":
-    """По стадии напоминания возвращает (путь к лицу, живой текст-подпись)."""
+    """По стадии напоминания возвращает (путь к лицу, живой текст-подпись).
+    Опенер выбирается по номеру задачи — соседние задачи получают разные тексты."""
     title = esc(task.title)
     num = kid(task.id)
+    openers = _OPENERS[reason]
+    opener = openers[task.id % len(openers)]
     if reason == "two_days":
-        face = "за 2 дня до дедлайна.png"
-        text = (
-            "Привет здоровяяк! Еще 2 дня. ММммм\n\n"
-            f"{num} «{title}» — дедлайн {human_date(task.deadline)}."
-        )
+        text = f"{opener}\n\n{num} {title}\nдедлайн {human_date(task.deadline)}"
     elif reason == "today":
-        face = "в день дедлайна.png"
-        text = (
-            "дедлайн сегодня.\n\n"
-            f"{num} «{title}»."
-        )
+        text = f"{opener}\n\n{num} {title}"
     else:  # overdue
-        face = "через день после дедлайна.png"
-        text = (
-            "💀💀💀\n\n"
-            f"{num} «{title}» — просрочена.\n"
-            "никогда не поздно."
-        )
-    return str(_FACES_DIR / face), text
+        text = f"{opener}\n\n{num} {title}\nникогда не поздно"
+    return str(_FACES_DIR / _FACE_BY_REASON[reason]), text
 
 
 def start_scheduler(bot: Bot, config: Config, store: SheetsStore) -> AsyncIOScheduler:

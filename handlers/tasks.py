@@ -217,7 +217,8 @@ def build_tasks_router(config: Config, store: SheetsStore, notifier) -> Router:
         if status == "done":
             caption = (
                 "YESS YEEESSSS YEEEAH\n\n"
-                f"{kid(task.id)} «{esc(task.title)}» — готово."
+                f"{kid(task.id)} {esc(task.title)}\n"
+                "Готово"
             )
             await cb.message.answer_photo(FSInputFile(_DONE_FACE), caption=caption)
 
@@ -256,7 +257,7 @@ def build_tasks_router(config: Config, store: SheetsStore, notifier) -> Router:
             await cb.answer("Задача не найдена", show_alert=True)
             return
         await cb.message.answer(
-            f"Точно удалить задачу {kid(task.id)} «{esc(task.title)}»? Это необратимо.",
+            f"Точно удалить задачу {kid(task.id)} {esc(task.title)}? Это необратимо.",
             reply_markup=kb.confirm_delete_keyboard(task_id),
         )
         await cb.answer()

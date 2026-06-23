@@ -4,6 +4,8 @@ from datetime import date, datetime, timedelta
 from task_bot.sheets import Task
 
 STATUS_LABELS = {"todo": "🔵 todo", "in_progress": "🟡 в работе", "done": "🟢 готово"}
+# Без кружков — для компактного списка задач
+STATUS_PLAIN = {"todo": "todo", "in_progress": "в работе", "done": "готово"}
 
 _KEYCAPS = {str(d): f"{d}️⃣" for d in range(10)}
 
@@ -66,7 +68,7 @@ def format_task_list(tasks: list[Task]) -> str:
     if not tasks:
         return "Нет задач."
     return "\n".join(
-        f"{kid(t.id)} [{STATUS_LABELS.get(t.status, t.status)}] <b>{esc(t.title)}</b>"
+        f"{kid(t.id)} {STATUS_PLAIN.get(t.status, t.status)} <b>{esc(t.title)}</b>"
         f"{' → ' + human_date(t.deadline) if t.deadline else ''} ({esc(t.assignee)})"
         for t in tasks
     )
