@@ -43,7 +43,7 @@ def build_tasks_router(config: Config, store: SheetsStore, notifier) -> Router:
         await state.update_data(title=message.text)
         await state.set_state(NewTask.description)
         await message.answer(
-            "Описание? (или «Пропустить»)",
+            "Описание? (или Пропустить)",
             reply_markup=kb.description_keyboard(),
         )
 
@@ -72,7 +72,7 @@ def build_tasks_router(config: Config, store: SheetsStore, notifier) -> Router:
         await state.update_data(assignee=username)
         await state.set_state(NewTask.deadline)
         await cb.message.answer(
-            "Дедлайн в формате ГГГГ-ММ-ДД? (или «Без дедлайна»)",
+            "Дедлайн в формате ГГГГ-ММ-ДД? (или Без дедлайна)",
             reply_markup=kb.deadline_keyboard(),
         )
         await cb.answer()
