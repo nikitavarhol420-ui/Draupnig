@@ -78,7 +78,7 @@ def format_task_card(task: Task) -> str:
     """Format a single task as a detailed card with all fields (HTML)."""
     lines = [
         f"{kid(task.id)} <b>{esc(task.title)}</b>",
-        f"<b>Статус:</b> {STATUS_LABELS.get(task.status, task.status)}",
+        f"<b>Статус:</b> {STATUS_PLAIN.get(task.status, task.status)}",
         f"<b>Исполнитель:</b> {esc(name(task.assignee))}",
     ]
     if task.description:
