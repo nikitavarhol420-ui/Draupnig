@@ -8,8 +8,8 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
 
-# Лицо «когда всё готово» лежит в папке task_bot/ (на уровень выше handlers/)
-_DONE_FACE = str(Path(__file__).parent.parent / "когда все сделано.png")
+# Лицо «когда всё готово» (сжатый jpg, латинское имя — см. _FACE_BY_REASON в scheduler)
+_DONE_FACE = str(Path(__file__).parent.parent / "done.jpg")
 
 from task_bot.config import Config
 from task_bot.sheets import SheetsStore
