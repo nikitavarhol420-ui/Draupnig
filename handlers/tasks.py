@@ -6,6 +6,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message, CallbackQuery, FSInputFile
+from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
 
 # Лицо «когда всё готово» лежит в папке task_bot/ (на уровень выше handlers/)
 _DONE_FACE = str(Path(__file__).parent.parent / "когда все сделано.png")
@@ -66,15 +67,34 @@ def build_tasks_router(config: Config, store: SheetsStore, notifier) -> Router:
             reply_markup=kb.assignee_keyboard(config.participants),
         )
 
+    def _calendar() -> SimpleCalendar:
+        # Календарь с русскими месяцами и кнопками
+        return SimpleCalendar(locale="ru_RU.UTF-8", today_btn="Сегодня")
+
     @router.callback_query(NewTask.assignee, F.data.startswith("assignee:"))
     async def new_assignee(cb: CallbackQuery, state: FSMContext):
         username = cb.data.split(":", 1)[1]
         await state.update_data(assignee=username)
         await state.set_state(NewTask.deadline)
+        # Показываем календарь для выбора даты + кнопку «Без дедлайна»
         await cb.message.answer(
-            "Дедлайн в формате ГГГГ-ММ-ДД? (или Без дедлайна)",
+            "Выбери дедлайн на календаре:",
+            reply_markup=await _calendar().start_calendar(),
+        )
+        await cb.message.answer(
+            "…или без срока:",
             reply_markup=kb.deadline_keyboard(),
         )
+        await cb.answer()
+
+    @router.callback_query(NewTask.deadline, SimpleCalendarCallback.filter())
+    async def new_deadline_calendar(cb: CallbackQuery,
+                                    callback_data: SimpleCalendarCallback,
+                                    state: FSMContext):
+        # Пользователь тыкнул дату в календаре
+        selected, chosen = await _calendar().process_selection(cb, callback_data)
+        if selected:
+            await _finish(cb.message, state, chosen.strftime("%Y-%m-%d"))
         await cb.answer()
 
     @router.callback_query(NewTask.deadline, F.data == "deadline:none")

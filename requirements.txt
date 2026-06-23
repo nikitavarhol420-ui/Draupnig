@@ -3,3 +3,4 @@ gspread>=6.0
 APScheduler>=3.10
 python-dotenv>=1.0
 pytest>=8.0
+aiogram-calendar>=0.6
