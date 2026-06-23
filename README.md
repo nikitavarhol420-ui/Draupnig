@@ -144,3 +144,50 @@ cd /Users/nickvarhol/Work/Claude/Draupnir && .venv/bin/python3.14 -m task_bot.ma
 | `/task N` | Карточка задачи N: сменить статус, переназначить |
 | `/report` | Сводка по задачам прямо сейчас |
 | `/help` | Справка по командам |
+
+---
+
+## Запуск на сервере (systemd)
+
+После приёмки на локальной машине бот можно настроить на автономный запуск на сервере с автоматической переза грузкой при отказах.
+
+### Подготовка
+
+1. **Отредактируй файл** `task_bot/deploy/task-bot.service`:
+   - Замени `REPLACE_USER` на реального пользователя сервера (например, `bot` или `ubuntu`).
+   - Замени `/path/to/Draupnir` на полный путь к директории на сервере (например, `/home/bot/Draupnir`).
+
+   Пример строки после редактирования:
+   ```ini
+   User=bot
+   WorkingDirectory=/home/bot/Draupnir
+   ExecStart=/home/bot/Draupnir/.venv/bin/python3.14 -m task_bot.main
+   ```
+
+### Установка
+
+Выполни эти команды от пользователя с `sudo` прав:
+
+```bash
+# Скопировать файл сервиса в системную директорию
+sudo cp task_bot/deploy/task-bot.service /etc/systemd/system/
+
+# Перезагрузить systemd для регистрации нового сервиса
+sudo systemctl daemon-reload
+
+# Включить автозапуск и сразу запустить бота
+sudo systemctl enable --now task-bot
+
+# Проверить статус (должен быть active (running))
+systemctl status task-bot
+
+# Смотреть живые логи (Ctrl+C для выхода)
+journalctl -u task-bot -f
+```
+
+### Проверка автономности
+
+- **`systemctl status task-bot`** должна показать `active (running)`.
+- После перезагрузки сервера (`sudo reboot`) бот автоматически поднимется.
+- Если процесс упадёт, systemd перезапустит его через ~5 секунд.
+- Проверь в Telegram, что бот отвечает на `/help`.

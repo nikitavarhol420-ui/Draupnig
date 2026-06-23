@@ -1,0 +1,17 @@
+[Unit]
+Description=Draupnir Task Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=REPLACE_USER
+WorkingDirectory=/path/to/Draupnir
+ExecStart=/path/to/Draupnir/.venv/bin/python3.14 -m task_bot.main
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/task-bot.log
+StandardError=append:/var/log/task-bot.log
+
+[Install]
+WantedBy=multi-user.target
