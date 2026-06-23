@@ -8,7 +8,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message, CallbackQuery, FSInputFile
 
 # Лицо «когда всё готово» лежит в папке task_bot/ (на уровень выше handlers/)
-_DONE_FACE = str(Path(__file__).parent.parent / "face4 когда все готово.jpg")
+_DONE_FACE = str(Path(__file__).parent.parent / "когда все сделано.png")
 
 from task_bot.config import Config
 from task_bot.sheets import SheetsStore
@@ -216,9 +216,8 @@ def build_tasks_router(config: Config, store: SheetsStore, notifier) -> Router:
         # Задачу закрыли — шлём лицо «когда всё готово» с поздравлением
         if status == "done":
             caption = (
-                "ОНО СВЕРШИЛОСЬ 😭\n\n"
-                f"{kid(task.id)} «{esc(task.title)}» — ГОТОВО.\n"
-                "Скупая мужская слеза. Красавчик."
+                "YESS YEEESSSS YEEEAH\n\n"
+                f"{kid(task.id)} «{esc(task.title)}» — готово."
             )
             await cb.message.answer_photo(FSInputFile(_DONE_FACE), caption=caption)
 
